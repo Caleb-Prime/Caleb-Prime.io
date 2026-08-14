@@ -1,129 +1,80 @@
 <!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Color Picker - Caleb-Prime</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0f172a, #1e1b4b);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: #ffffff;
-        }
+<html>
+  <head>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+      <h1 class="title">Copy HEX Color</h1>
+<!-- 1. Tombol pilih warna -->
+<input type="color" id="picker" value="#5c6ac4" oninput="gantiWarna()">
 
-        .picker-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 24px;
-            padding: 30px;
-            width: 320px;
-            text-align: center;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-        }
+<!-- 2. Teks kode HEX -->
+<h2 id="kodeHex">#5C6AC4</h2>
 
-        h2 {
-            margin-bottom: 20px;
-            font-size: 22px;
-            background: linear-gradient(45deg, #38bdf8, #818cf8);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+<!-- 3. Tombol copy -->
+<button onclick="salinKode()">Copy HEX</button>
 
-        .color-display {
-            width: 100%;
-            height: 120px;
-            border-radius: 16px;
-            background-color: #38bdf8;
-            margin-bottom: 20px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            transition: background-color 0.2s ease;
-        }
+<!-- Tambahkan ini di bawah elemen button kamu -->
+<div class="history-box">
+  <h3>History Color</h3>
+  <ul id="historyList"></ul>
+</div>
 
-        input[type="color"] {
-            -webkit-appearance: none;
-            border: none;
-            width: 100%;
-            height: 50px;
-            border-radius: 12px;
-            cursor: pointer;
-            background: none;
-            margin-bottom: 15px;
-        }
+<script>
+  // Fungsi yang otomatis jalan saat halaman pertama kali dibuka
+  window.onload = function() {
+    loadHistory();
+  };
 
-        input[type="color"]::-webkit-color-swatch-wrapper {
-            padding: 0;
-        }
+  function gantiWarna() {
+    let warna = document.getElementById("picker").value;
+    let teksHex = document.getElementById("kodeHex");
+    teksHex.innerText = warna;
+    teksHex.style.color = warna;
+  }
 
-        input[type="color"]::-webkit-color-swatch {
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 12px;
-        }
+  function salinKode() {
+    let warna = document.getElementById("kodeHex").innerText;
+    navigator.clipboard.writeText(warna);
 
-        .hex-box {
-            background: rgba(0, 0, 0, 0.2);
-            padding: 12px;
-            border-radius: 10px;
-            font-family: monospace;
-            font-size: 16px;
-            margin-bottom: 15px;
-            letter-spacing: 1px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
+    // 1. Simpan ke localStorage
+    simpanKeStorage(warna);
 
-        .btn-copy {
-            background: linear-gradient(45deg, #38bdf8, #6366f1);
-            color: #ffffff;
-            border: none;
-            width: 100%;
-            padding: 12px;
-            font-weight: bold;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            box-shadow: 0 4px 15px rgba(56, 189, 248, 0.4);
-        }
+    // 2. Tampilkan di layar
+    tambahKeList(warna);
 
-        .btn-copy:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(56, 189, 248, 0.6);
-        }
-    </style>
-</head>
-<body>
+    alert("Copied: " + warna);
+  }
 
-    <div class="picker-card">
-        <h2>HTML Color Picker</h2>
-        <div class="color-display" id="colorBox"></div>
-        <input type="color" id="colorPicker" value="#38bdf8">
-        <div class="hex-box" id="hexText">#38bdf8</div>
-        <button class="btn-copy" onclick="copyHex()">Salin Kode HEX</button>
-    </div>
+  function tambahKeList(warna) {
+    let list = document.getElementById("historyList");
+    let item = document.createElement("li");
+    item.innerText = warna;
+    item.style.color = warna;
+    list.appendChild(item);
+  }
 
-    <script>
-        const colorPicker = document.getElementById('colorPicker');
-        const colorBox = document.getElementById('colorBox');
-        const hexText = document.getElementById('hexText');
+  function simpanKeStorage(warna) {
+    // Ambil data lama dari localStorage (kalau ada)
+    let history = JSON.parse(localStorage.getItem("colorHistory")) || [];
+    
+    // Tambah warna baru ke dalam array
+    history.push(warna);
+    
+    // Simpan kembali array ke localStorage
+    localStorage.setItem("colorHistory", JSON.stringify(history));
+  }
 
-        colorPicker.addEventListener('input', (e) => {
-            const selectedColor = e.target.value;
-            colorBox.style.backgroundColor = selectedColor;
-            hexText.textContent = selectedColor.toUpperCase();
-        });
-
-        function copyHex() {
-            navigator.clipboard.writeText(hexText.textContent);
-            alert('Kode HEX berhasil disalin: ' + hexText.textContent);
-        }
-    </script>
-
+  function loadHistory() {
+    // Ambil data dari localStorage
+    let history = JSON.parse(localStorage.getItem("colorHistory")) || [];
+    
+    // Tampilkan semua warna tersimpan ke daftar
+    history.forEach(function(warna) {
+      tambahKeList(warna);
+    });
+  }
+</script>
+<script src="script.js"></script>
 </body>
 </html>
